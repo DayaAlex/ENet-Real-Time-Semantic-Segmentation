@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 import torch
+import glob
 
 def create_class_mask(img, color_map, is_normalized_img=True, is_normalized_map=False, show_masks=False):
     """
@@ -58,36 +59,43 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
 
     yields inputs and labels of the batch size
     """
-
-    filenames_t = os.listdir(training_path)
+    #print(training_path)
+    filenames_t = glob.glob(training_path+f'*/*.jpg')
+    #print(filenames_t)
     total_files_t = len(filenames_t)
+
+    filenames_s = glob.glob(segmented_path+f'*/*.png') 
+    total_files_s = len(filenames_s)#contain only png file names
     
-    filenames_s = os.listdir(segmented_path)
-    total_files_s = len(filenames_s)
-    
+    #print(filenames_s)
+    print(total_files_s, total_files_t)
     assert(total_files_t == total_files_s)
     
     if str(batch_size).lower() == 'all':
         batch_size = total_files_s
     
+    print(batch_size)
     idx = 0
     while(1):
+        print('inside')
         batch_idxs = np.random.randint(0, total_files_s, batch_size)
             
-        
+        print(len(batch_idxs))
         inputs = []
         labels = []
         
         for jj in batch_idxs:
-            img = plt.imread(training_path + filenames_t[jj])
+            #print(jj)
+            img = plt.imread(filenames_t[jj])
             img = cv2.resize(img, (h, w), cv2.INTER_NEAREST)
             inputs.append(img)
             
-            img = Image.open(segmented_path + filenames_s[jj])
+            img = Image.open(filenames_s[jj])
             img = np.array(img)
             img = cv2.resize(img, (h, w), cv2.INTER_NEAREST)
             labels.append(img)
-         
+        print(len(inputs))
+        print(len(labels))
         inputs = np.stack(inputs, axis=2)
         inputs = torch.tensor(inputs).transpose(0, 2).transpose(1, 3)
         
@@ -97,22 +105,54 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
 
 
 def decode_segmap(image):
-    Sky = [128, 128, 128]
-    Building = [128, 0, 0]
-    Pole = [192, 192, 128]
-    Road_marking = [255, 69, 0]
+    Sky = [70,130,80]
+    Building = [70,70,70]
+    Pole = [153,153,153]
     Road = [128, 64, 128]
-    Pavement = [60, 40, 222]
-    Tree = [128, 128, 0]
-    SignSymbol = [192, 128, 128]
-    Fence = [64, 64, 128]
-    Car = [64, 0, 128]
-    Pedestrian = [64, 64, 0]
-    Bicyclist = [0, 128, 192]
+    Sidewalk = [244, 35,232]
+    vegetation = [107,142, 35]
+    Billboard = [174, 64, 67]
+    Fence = [190,153,153]
+    Car = [0,  0,142]
+    Person = [220, 20, 60]
+    Bicycle = [119, 11, 32]
+    parking =[250,170,160]
+    drivable_fallback = [152,251,152]
+    non_drivable_fallback=[152,251,152]
+    animal = [246, 198, 145]
+    rider = [255,  0,  0]
+    motorcycle= [0,  0,230]
+    autorickshaw = [255, 204, 54]
+    truck = [ 0,  0, 70]
+    bus = [0, 60,100]
+    caravan = [0,  0, 90]
+    trailer = [0,  0,110]
+    train = [0, 80,100]
+    vehicle_fallback = [136, 143, 153]
+    curb = [220, 190, 40]
+    wall = [102,102,156]
+    guard_rail = [180,165,180]
+    traffic_sign = [220,220,0]
+    traffic_light = [250,170, 30]
+    polegroup = [153,153,153]
+    obs_str_bar_fallback = [169, 187, 214]
+    bridge = [150,100,100]
+    tunnel = [150,120, 90]
+    license_plate = [0,  0,142]
+    fallback_background  = [169, 187, 214]
+    out_of_roi = [0,0,0]
+    rectification_border=[0,0,0]
+    ego_vehicle=[0,0,0]
+    unlabeled=[0,0,0]
+    rail_track = [230,150,140]
 
-    label_colors = np.array([Sky, Building, Pole, Road_marking, Road, 
-                              Pavement, Tree, SignSymbol, Fence, Car, 
-                              Pedestrian, Bicyclist]).astype(np.uint8)
+
+    label_colors = np.array([Sky, Building, Pole , Road, Sidewalk,vegetation, Billboard, Fence, Car, Person,Bicycle, parking,
+                              drivable_fallback, non_drivable_fallback, animal, rider, motorcycle, autorickshaw, truck,  
+                              bus, caravan, trailer, train, vehicle_fallback, curb, wall, guard_rail, traffic_sign, 
+                              traffic_light, polegroup,obs_str_bar_fallback , bridge,tunnel, license_plate, 
+                              fallback_background, out_of_roi,rectification_border, ego_vehicle,unlabeled,rail_track 
+                              ]).astype(np.uint8)
 
     r = np.zeros_like(image).astype(np.uint8)
     g = np.zeros_like(image).astype(np.uint8)
@@ -163,10 +203,12 @@ def get_class_weights(loader, num_classes, c=1.02):
     - class_weights : An array equal in length to the number of classes
                       containing the class weights for each class
     '''
-
+    #print('inside ge_class_weights')
     _, labels = next(loader)
     all_labels = labels.flatten()
     each_class = np.bincount(all_labels, minlength=num_classes)
+    #print(len(each_class))
     prospensity_score = each_class / len(all_labels)
     class_weights = 1 / (np.log(c + prospensity_score))
+    #print('finished')
     return class_weights

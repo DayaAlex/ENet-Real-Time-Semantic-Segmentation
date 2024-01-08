@@ -21,12 +21,16 @@ def train(FLAGS):
     lp = FLAGS.label_path_train
     ipv = FLAGS.input_path_val
     lpv = FLAGS.label_path_val
+    
+    print('device is ', device)
     print ('[INFO]Defined all the hyperparameters successfully!')
     
+
     # Get the class weights
     print ('[INFO]Starting to define the class weights...')
     pipe = loader(ip, lp, batch_size='all')
     class_weights = get_class_weights(pipe, nc)
+    print(class_weights)
     print ('[INFO]Fetched all class weights successfully!')
 
     # Get an instance of the model
@@ -47,12 +51,12 @@ def train(FLAGS):
     print ('[INFO]Staring Training...')
     print ()
 
-    train_losses = []
-    eval_losses = []
     
+    train_losses, eval_losses, test_losses, eval_mIoU, test_mIoU = [],[],[],[],[]
+
     # Assuming we are using the CamVid Dataset
-    bc_train = 367 // batch_size
-    bc_eval = 101 // batch_size
+    bc_train =  7034// batch_size
+    bc_eval = 1004// batch_size
 
     pipe = loader(ip, lp, batch_size)
     eval_pipe = loader(ipv, lpv, batch_size)
@@ -108,14 +112,15 @@ def train(FLAGS):
                     eval_loss += loss.item()
 
                 print ()
-                print ('Loss {:6f}'.format(eval_loss))
+                print ('Val Loss {:6f}'.format(eval_loss))
                 
                 eval_losses.append(eval_loss)
             
         if e % save_every == 0:
             checkpoint = {
                 'epochs' : e,
-                'state_dict' : enet.state_dict()
+                'state_dict' : enet.state_dict(),
+                'class_weights': class_weights
             }
             torch.save(checkpoint, './ckpt-enet-{}-{}.pth'.format(e, train_loss))
             print ('Model saved!')
@@ -124,3 +129,9 @@ def train(FLAGS):
                'Total Mean Loss: {:6f}'.format(sum(train_losses) / epochs))
 
     print ('[INFO]Training Process complete!')
+
+print('......Trying out trained model on test set......')
+
+
+
+
