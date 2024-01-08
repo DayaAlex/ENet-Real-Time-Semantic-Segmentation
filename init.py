@@ -1,4 +1,4 @@
-import numpy as np
+
 import argparse
 from train import *
 from test import *
@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-bs', '--batch-size',
                         type=int,
-                        default=10,
+                        default=32 ,
                         help='The batch size')
 
     parser.add_argument('-wd', '--weight-decay',
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-nc', '--num-classes',
                         type=int,
-                        default=12,
+                        default=40,
                         help='Number of unique classes')
 
     parser.add_argument('-se', '--save-every',
@@ -94,32 +94,32 @@ if __name__ == '__main__':
 
     parser.add_argument('-iptr', '--input-path-train',
                         type=str,
-                        default='./datasets/CamVid/train/',
+                        default='/Users/dalex/final_year_proj/datasets/IDD/idd20kII/leftImg8bit/train/',
                         help='The path to the input dataset')
 
     parser.add_argument('-lptr', '--label-path-train',
                         type=str,
-                        default='./datasets/CamVid/trainannot/',
+                        default='/Users/dalex/final_year_proj/datasets/IDD/idd20kII/gtFine/train/',
                         help='The path to the label dataset')
 
     parser.add_argument('-ipv', '--input-path-val',
                         type=str,
-                        default='./datasets/CamVid/val/',
+                        default='/Users/dalex/final_year_proj/datasets/IDD/idd20kII/leftImg8bit/train/',
                         help='The path to the input dataset')
 
     parser.add_argument('-lpv', '--label-path-val',
                         type=str,
-                        default='./datasets/CamVid/valannot/',
+                        default='/Users/dalex/final_year_proj/datasets/IDD/idd20kII/gtFine/train/',
                         help='The path to the label dataset')
 
     parser.add_argument('-iptt', '--input-path-test',
                         type=str,
-                        default='./datasets/CamVid/test/',
+                        default='/Users/dalex/final_year_proj/datasets/IDD/IDD_Segmentation/leftImg8bit/val/',
                         help='The path to the input dataset')
 
     parser.add_argument('-lptt', '--label-path-test',
                         type=str,
-                        default='./datasets/CamVid/testannot/',
+                        default='/Users/dalex/final_year_proj/datasets/IDD/IDD_Segmentation/gtFine/val/',
                         help='The path to the label dataset')
 
     parser.add_argument('-pe', '--print-every',
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('--cuda',
                         type=bool,
                         default=False,
-                        help='Whether to use cuda or not')
+                        help='Whether to use gpu(mps or cuda) or not')
 
     parser.add_argument('--mode',
                         choices=['train', 'test'],
@@ -144,8 +144,7 @@ if __name__ == '__main__':
     
     FLAGS, unparsed = parser.parse_known_args()
 
-    FLAGS.cuda = torch.device('cuda:0' if torch.cuda.is_available() and FLAGS.cuda \
-                               else 'cpu')
+    FLAGS.cuda = torch.device('mps' if torch.backends.mps.is_available() else 'cuda:0' if FLAGS.cuda else 'cpu')
 
     if FLAGS.mode.lower() == 'train':
         train(FLAGS)
