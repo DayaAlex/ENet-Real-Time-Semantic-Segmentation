@@ -11,7 +11,6 @@ class UBNeck(nn.Module):
         self.reduced_depth = int(in_channels / projection_ratio)
         self.out_channels = out_channels
         
-        
         if relu:
             activation = nn.ReLU()
         else:

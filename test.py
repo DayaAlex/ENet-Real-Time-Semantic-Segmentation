@@ -7,7 +7,6 @@ import os
 from tqdm import tqdm
 import matplotlib.pyplot as plt
 
-
 def test(FLAGS):
     # Check if the pretrained model is available
     if not FLAGS.m.endswith('.pth'):

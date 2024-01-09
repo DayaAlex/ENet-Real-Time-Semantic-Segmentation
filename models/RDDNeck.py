@@ -107,8 +107,12 @@ class RDDNeck(nn.Module):
         if self.in_channels != self.out_channels:
             out_shape = self.out_channels - self.in_channels
             extras = torch.zeros((bs, out_shape, x.shape[2], x.shape[3]))
-            if torch.cuda.is_available():
+            
+            if torch.backends.mps.is_available():
+                extras = extras.to('mps') 
+            elif torch.cuda.is_available():
                 extras = extras.cuda()
+                
             x_copy = torch.cat((x_copy, extras), dim = 1)
 
         # Sum of main and side branches

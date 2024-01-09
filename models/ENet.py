@@ -25,7 +25,7 @@ class ENet(nn.Module):
     def __init__(self, C):
         super().__init__()
         
-        # Define class variables
+        # Define o/p class variables
         self.C = C
         
         # The initial block
