@@ -64,7 +64,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-bs', '--batch-size',
                         type=int,
-                        default=32 ,
+                        default=10 ,
                         help='The batch size')
 
     parser.add_argument('-wd', '--weight-decay',
