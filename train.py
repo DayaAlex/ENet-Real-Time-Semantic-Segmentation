@@ -1,9 +1,15 @@
+
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
+
 import torch
 import torch.nn as nn
 from utils import *
 from models.ENet import ENet
 import sys
 from tqdm import tqdm
+
 
 def train(FLAGS):
 
@@ -31,6 +37,7 @@ def train(FLAGS):
     pipe = loader(ip, lp, batch_size='all')
     class_weights = get_class_weights(pipe, nc)
     print(class_weights)
+    print(class_weights.shape)
     print ('[INFO]Fetched all class weights successfully!')
 
     # Get an instance of the model
@@ -56,7 +63,7 @@ def train(FLAGS):
 
     # Assuming we are using the CamVid Dataset
     bc_train =  7034// batch_size
-    bc_eval = 1004// batch_size
+    bc_eval = 1055// batch_size
 
     pipe = loader(ip, lp, batch_size)
     eval_pipe = loader(ipv, lpv, batch_size)
@@ -111,7 +118,7 @@ def train(FLAGS):
 
                     eval_loss += loss.item()
 
-                print ()
+                
                 print ('Val Loss {:6f}'.format(eval_loss))
                 
                 eval_losses.append(eval_loss)
@@ -130,7 +137,7 @@ def train(FLAGS):
 
     print ('[INFO]Training Process complete!')
 
-print('......Trying out trained model on test set......')
+#print('......Trying out trained model on test set......')
 
 
 

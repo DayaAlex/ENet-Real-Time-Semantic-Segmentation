@@ -5,6 +5,7 @@ import os
 from PIL import Image
 import torch
 import glob
+import tqdm
 
 def create_class_mask(img, color_map, is_normalized_img=True, is_normalized_map=False, show_masks=False):
     """
@@ -72,33 +73,36 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
     assert(total_files_t == total_files_s)
     
     if str(batch_size).lower() == 'all':
-        batch_size = total_files_s
+        batch_size = 500
     
     print(batch_size)
     idx = 0
     while(1):
-        print('inside')
+        #print('inside loader')
         batch_idxs = np.random.randint(0, total_files_s, batch_size)
             
-        print(len(batch_idxs))
+        #print(len(batch_idxs))
         inputs = []
         labels = []
         
         for jj in batch_idxs:
-            #print(jj)
-            img = plt.imread(filenames_t[jj])
+            # Reading the training image using OpenCV
+            img = cv2.imread(filenames_t[jj])
             img = cv2.resize(img, (h, w), cv2.INTER_NEAREST)
             inputs.append(img)
-            
-            img = Image.open(filenames_s[jj])
-            img = np.array(img)
-            img = cv2.resize(img, (h, w), cv2.INTER_NEAREST)
-            labels.append(img)
-        print(len(inputs))
-        print(len(labels))
+    
+            # Reading the segmented image using OpenCV
+            label_img = cv2.imread(filenames_s[jj], cv2.IMREAD_UNCHANGED)
+            # Set all pixels with values greater than 39 to zero
+            label_img[label_img > 39] = 0
+            label_img = cv2.resize(label_img, (h, w), cv2.INTER_NEAREST)
+            labels.append(label_img)
+        
+        #print(labels)
+        #print(len(inputs))
+        #print(len(labels))
         inputs = np.stack(inputs, axis=2)
         inputs = torch.tensor(inputs).transpose(0, 2).transpose(1, 3)
-        
         labels = torch.tensor(labels)
         
         yield inputs, labels
@@ -187,6 +191,7 @@ def show_images(images, in_row=True):
         plt.axis('off')
         plt.imshow(images[ii][1])
     plt.show()
+
 
 def get_class_weights(loader, num_classes, c=1.02):
     '''
