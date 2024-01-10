@@ -1,3 +1,6 @@
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
 import torch
 import torch.nn as nn
 from utils import *
@@ -40,7 +43,7 @@ def test(FLAGS):
 
     images = {
         0 : ['Input Image', tmg_],
-        1 : ['Predicted Segmentation', b_],
+        1 : ['Predicted Segmentation', decoded_segmap],
     }
 
     show_images(images)

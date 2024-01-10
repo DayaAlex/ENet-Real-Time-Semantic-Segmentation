@@ -76,7 +76,7 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
         batch_size = 500
     
     print(batch_size)
-    idx = 0
+    road_idx = 3
     while(1):
         #print('inside loader')
         batch_idxs = np.random.randint(0, total_files_s, batch_size)
@@ -93,8 +93,11 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
     
             # Reading the segmented image using OpenCV
             label_img = cv2.imread(filenames_s[jj], cv2.IMREAD_UNCHANGED)
-            # Set all pixels with values greater than 39 to zero
-            label_img[label_img > 39] = 0
+            
+            road_mask = (label_img == road_idx).astype(np.uint8)
+            # Set all pixels with values other than 3 to zero
+            road_mask[road_mask != road_idx] = 0
+
             label_img = cv2.resize(label_img, (h, w), cv2.INTER_NEAREST)
             labels.append(label_img)
         
@@ -107,70 +110,15 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
         
         yield inputs, labels
 
-
 def decode_segmap(image):
-    Sky = [70,130,80]
-    Building = [70,70,70]
-    Pole = [153,153,153]
-    Road = [128, 64, 128]
-    Sidewalk = [244, 35,232]
-    vegetation = [107,142, 35]
-    Billboard = [174, 64, 67]
-    Fence = [190,153,153]
-    Car = [0,  0,142]
-    Person = [220, 20, 60]
-    Bicycle = [119, 11, 32]
-    parking =[250,170,160]
-    drivable_fallback = [152,251,152]
-    non_drivable_fallback=[152,251,152]
-    animal = [246, 198, 145]
-    rider = [255,  0,  0]
-    motorcycle= [0,  0,230]
-    autorickshaw = [255, 204, 54]
-    truck = [ 0,  0, 70]
-    bus = [0, 60,100]
-    caravan = [0,  0, 90]
-    trailer = [0,  0,110]
-    train = [0, 80,100]
-    vehicle_fallback = [136, 143, 153]
-    curb = [220, 190, 40]
-    wall = [102,102,156]
-    guard_rail = [180,165,180]
-    traffic_sign = [220,220,0]
-    traffic_light = [250,170, 30]
-    polegroup = [153,153,153]
-    obs_str_bar_fallback = [169, 187, 214]
-    bridge = [150,100,100]
-    tunnel = [150,120, 90]
-    license_plate = [0,  0,142]
-    fallback_background  = [169, 187, 214]
-    out_of_roi = [0,0,0]
-    rectification_border=[0,0,0]
-    ego_vehicle=[0,0,0]
-    unlabeled=[0,0,0]
-    rail_track = [230,150,140]
+    road_color = [255, 0, 255]  # Magenta for road
+    non_road_color = [255, 0, 0]  # Red for non-road
 
+    # Create an RGB image with all pixels set to the non-road color
+    rgb = np.ones((image.shape[0], image.shape[1], 3), dtype=np.uint8) * non_road_color
 
-    label_colors = np.array([Sky, Building, Pole , Road, Sidewalk,vegetation, Billboard, Fence, Car, Person,Bicycle, parking,
-                              drivable_fallback, non_drivable_fallback, animal, rider, motorcycle, autorickshaw, truck,  
-                              bus, caravan, trailer, train, vehicle_fallback, curb, wall, guard_rail, traffic_sign, 
-                              traffic_light, polegroup,obs_str_bar_fallback , bridge,tunnel, license_plate, 
-                              fallback_background, out_of_roi,rectification_border, ego_vehicle,unlabeled,rail_track 
-                              ]).astype(np.uint8)
-
-    r = np.zeros_like(image).astype(np.uint8)
-    g = np.zeros_like(image).astype(np.uint8)
-    b = np.zeros_like(image).astype(np.uint8)
-
-    for label in range(len(label_colors)):
-            r[image == label] = label_colors[label, 0]
-            g[image == label] = label_colors[label, 1]
-            b[image == label] = label_colors[label, 2]
-
-    rgb = np.zeros((image.shape[0], image.shape[1], 3)).astype(np.uint8)
-    rgb[:, :, 0] = r
-    rgb[:, :, 1] = g
-    rgb[:, :, 2] = b
+    # Set pixels belonging to the road to the road color
+    rgb[image == 1] = road_color
 
     return rgb
 

@@ -126,8 +126,7 @@ def train(FLAGS):
         if e % save_every == 0:
             checkpoint = {
                 'epochs' : e,
-                'state_dict' : enet.state_dict(),
-                'class_weights': class_weights
+                'state_dict' : enet.state_dict()
             }
             torch.save(checkpoint, './ckpt-enet-{}-{}.pth'.format(e, train_loss))
             print ('Model saved!')
@@ -137,8 +136,10 @@ def train(FLAGS):
 
     print ('[INFO]Training Process complete!')
 
-#print('......Trying out trained model on test set......')
-
-
-
-
+    checkpoint = {
+                'epochs' : e,
+                'state_dict' : enet.state_dict()
+            }
+    torch.save(checkpoint, './ckpt-enet-{}-{}.pth'.format(e, train_loss))
+    print ('Model saved!')
+    
