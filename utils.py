@@ -76,7 +76,7 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
         batch_size = 500
     
     print(batch_size)
-    road_idx = 3
+    road_idx = 0
     while(1):
         #print('inside loader')
         batch_idxs = np.random.randint(0, total_files_s, batch_size)
@@ -95,11 +95,8 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
             label_img = cv2.imread(filenames_s[jj], cv2.IMREAD_UNCHANGED)
             
             road_mask = (label_img == road_idx).astype(np.uint8)
-            # Set all pixels with values other than 3 to zero
-            road_mask[road_mask != road_idx] = 0
-
-            label_img = cv2.resize(label_img, (h, w), cv2.INTER_NEAREST)
-            labels.append(label_img)
+            road_mask = cv2.resize(road_mask, (h, w), cv2.INTER_NEAREST)
+            labels.append(road_mask)
         
         #print(labels)
         #print(len(inputs))

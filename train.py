@@ -140,6 +140,5 @@ def train(FLAGS):
                 'epochs' : e,
                 'state_dict' : enet.state_dict()
             }
-    torch.save(checkpoint, './ckpt-enet-{}-{}.pth'.format(e, train_loss))
+    torch.save(checkpoint, './ckpt-enet-IDD-{}-{}.pth'.format(e, train_loss))
     print ('Model saved!')
-    
