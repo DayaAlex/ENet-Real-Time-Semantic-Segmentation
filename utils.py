@@ -70,11 +70,10 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
     if str(batch_size).lower() == 'all':
         batch_size = total_files_s
     
-    idx = 0
+    road_idx = 3
     while(1):
         batch_idxs = np.random.randint(0, total_files_s, batch_size)
             
-        
         inputs = []
         labels = []
         
@@ -86,7 +85,9 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
             img = Image.open(segmented_path + filenames_s[jj])
             img = np.array(img)
             img = cv2.resize(img, (h, w), cv2.INTER_NEAREST)
-            labels.append(img)
+
+            road_mask = (img == road_idx).astype(np.uint8)
+            labels.append(road_mask)
          
         inputs = np.stack(inputs, axis=2)
         inputs = torch.tensor(inputs).transpose(0, 2).transpose(1, 3)
@@ -97,36 +98,14 @@ def loader(training_path, segmented_path, batch_size, h=512, w=512):
 
 
 def decode_segmap(image):
-    Sky = [128, 128, 128]
-    Building = [128, 0, 0]
-    Pole = [192, 192, 128]
-    Road_marking = [255, 69, 0]
-    Road = [128, 64, 128]
-    Pavement = [60, 40, 222]
-    Tree = [128, 128, 0]
-    SignSymbol = [192, 128, 128]
-    Fence = [64, 64, 128]
-    Car = [64, 0, 128]
-    Pedestrian = [64, 64, 0]
-    Bicyclist = [0, 128, 192]
+    road_color = [255, 0, 255]  # Magenta for road
+    non_road_color = [255, 0, 0]  # Red for non-road
 
-    label_colors = np.array([Sky, Building, Pole, Road_marking, Road, 
-                              Pavement, Tree, SignSymbol, Fence, Car, 
-                              Pedestrian, Bicyclist]).astype(np.uint8)
+    # Create an RGB image with all pixels set to the non-road color
+    rgb = np.ones((image.shape[0], image.shape[1], 3), dtype=np.uint8) * non_road_color
 
-    r = np.zeros_like(image).astype(np.uint8)
-    g = np.zeros_like(image).astype(np.uint8)
-    b = np.zeros_like(image).astype(np.uint8)
-
-    for label in range(len(label_colors)):
-            r[image == label] = label_colors[label, 0]
-            g[image == label] = label_colors[label, 1]
-            b[image == label] = label_colors[label, 2]
-
-    rgb = np.zeros((image.shape[0], image.shape[1], 3)).astype(np.uint8)
-    rgb[:, :, 0] = r
-    rgb[:, :, 1] = g
-    rgb[:, :, 2] = b
+    # Set pixels belonging to the road to the road color
+    rgb[image == 3] = road_color
 
     return rgb
 

@@ -1,3 +1,6 @@
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
 import torch
 import torch.nn as nn
 from utils import *
@@ -27,6 +30,7 @@ def train(FLAGS):
     print ('[INFO]Starting to define the class weights...')
     pipe = loader(ip, lp, batch_size='all')
     class_weights = get_class_weights(pipe, nc)
+    print(class_weights)
     print ('[INFO]Fetched all class weights successfully!')
 
     # Get an instance of the model
@@ -83,7 +87,6 @@ def train(FLAGS):
 
             train_loss += loss.item()
 
-            
         print ()
         train_losses.append(train_loss)
         
@@ -124,3 +127,10 @@ def train(FLAGS):
                'Total Mean Loss: {:6f}'.format(sum(train_losses) / epochs))
 
     print ('[INFO]Training Process complete!')
+    
+    checkpoint = {
+                'epochs' : e,
+                'state_dict' : enet.state_dict()
+            }
+    torch.save(checkpoint, './ckpt_trial_road-enet-{}-{}.pth'.format(e, train_loss))
+    print ('Model saved!')

@@ -1,3 +1,6 @@
+import os
+os.environ["PYTORCH_ENABLE_MPS_FALLBACK"] = "1"
+
 import torch
 import torch.nn as nn
 from utils import *
@@ -21,13 +24,16 @@ def test(FLAGS):
     checkpoint = torch.load(FLAGS.m,  map_location=FLAGS.cuda)
     
     # Assuming the dataset is camvid
+
     enet = ENet(FLAGS.num_classes)
+    enet = enet.to(FLAGS.cuda)
     enet.load_state_dict(checkpoint['state_dict'])
 
     tmg_ = plt.imread(FLAGS.image_path)
     tmg_ = cv2.resize(tmg_, (h, w), cv2.INTER_NEAREST)
     tmg = torch.tensor(tmg_).unsqueeze(0).float()
     tmg = tmg.transpose(2, 3).transpose(1, 2)
+    tmg = tmg.to(FLAGS.cuda)
 
     with torch.no_grad():
         out1 = enet(tmg.float()).squeeze(0)
