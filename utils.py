@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import os
 from PIL import Image
 import torch
+import glob
 
 def create_class_mask(img, color_map, is_normalized_img=True, is_normalized_map=False, show_masks=False):
     """
@@ -105,7 +106,7 @@ def decode_segmap(image):
     rgb = np.ones((image.shape[0], image.shape[1], 3), dtype=np.uint8) * non_road_color
 
     # Set pixels belonging to the road to the road color
-    rgb[image == 3] = road_color
+    rgb[image == 1] = road_color
 
     return rgb
 
@@ -145,6 +146,7 @@ def get_class_weights(loader, num_classes, c=1.02):
 
     _, labels = next(loader)
     all_labels = labels.flatten()
+    print(all_labels)
     each_class = np.bincount(all_labels, minlength=num_classes)
     prospensity_score = each_class / len(all_labels)
     class_weights = 1 / (np.log(c + prospensity_score))

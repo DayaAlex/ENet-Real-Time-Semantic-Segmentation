@@ -38,16 +38,20 @@ def test(FLAGS):
     with torch.no_grad():
         out1 = enet(tmg.float()).squeeze(0)
     
-    #smg_ = Image.open('/content/training/semantic/' + fname)
-    #smg_ = cv2.resize(np.array(smg_), (512, 512), cv2.INTER_NEAREST)
-
     b_ = out1.data.max(0)[1].cpu().numpy()
 
     decoded_segmap = decode_segmap(b_)
 
+    #smg_ = Image.open('/content/training/semantic/' + fname)
+    #smg_ = cv2.resize(np.array(smg_), (512, 512), cv2.INTER_NEAREST)
+    gt_path = FLAGS.image_path.replace('test','testannot') 
+    gt = plt.imread(gt_path)
+    gt = cv2.resize(gt, (h, w), cv2.INTER_NEAREST)
+
     images = {
         0 : ['Input Image', tmg_],
-        1 : ['Predicted Segmentation', b_],
+        1 : ['Predicted Segmentation', decoded_segmap],
+        2 : ['ground truth', gt]
     }
 
     show_images(images)
