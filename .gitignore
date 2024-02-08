@@ -3,6 +3,15 @@
 *.jpg
 *.zip
 *.swp
+*.pth
+
+*.txt
+
+.DS_Store
+datasets/
+enet_checkpoints_for_semantic_segmentation/
+checkpoints/
+60epdecoderfrozen/
 
 #environment folder
 daya_pytorch_env/
